@@ -2,13 +2,13 @@ import PropTypes from 'prop-types';
 
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import { Avatar, Box, ButtonBase } from '@mui/material';
+import { Avatar, Box, ButtonBase, Typography } from '@mui/material';
 
 // project imports
-import LogoSection from '../LogoSection';
+// import LogoSection from '../LogoSection';
 import SearchSection from './SearchSection';
-import ProfileSection from './ProfileSection';
-import NotificationSection from './NotificationSection';
+// import ProfileSection from './ProfileSection';
+// import NotificationSection from './NotificationSection';
 
 // assets
 import { IconMenu2 } from '@tabler/icons';
@@ -31,7 +31,10 @@ const Header = ({ handleLeftDrawerToggle }) => {
         }}
       >
         <Box component="span" sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
-          <LogoSection />
+          {/* <LogoSection /> */}
+          <Typography variant='h4' fontSize={'large'}>
+            Admin
+          </Typography>
         </Box>
         <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
           <Avatar
@@ -61,8 +64,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <Box sx={{ flexGrow: 1 }} />
 
       {/* notification & profile */}
-      <NotificationSection />
-      <ProfileSection />
+      {/* <NotificationSection /> */}
+      {/* <ProfileSection /> */}
     </>
   );
 };
