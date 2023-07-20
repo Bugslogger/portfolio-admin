@@ -1,20 +1,48 @@
 import React from 'react';
-import { FileUpload } from '@mui/icons-material';
-import { Box, Button, Card, CardActionArea, CardMedia, CircularProgress, Divider, Grid, TextField, useMediaQuery } from '@mui/material';
+import { Add, FileUpload } from '@mui/icons-material';
+import {
+  Box,
+  Button,
+  Card,
+  CardActionArea,
+  CardMedia,
+  Chip,
+  CircularProgress,
+  Divider,
+  Grid,
+  TextField,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import PortfolioCards from './PortfolioCard/PortfolioCard';
+// firebase
+import { AddDataToFirebase, GetDataFromFirebase } from '../../../firebase/function';
+// toast
+import { toast } from 'react-toastify';
+import { useEffect } from 'react';
 
 const Portfolio = () => {
   /* eslint-disable */
   const match = useMediaQuery('@media (max-width: 550px)');
   const customization = useSelector((state) => state.customization);
   const [file, setfile] = useState('');
+  const [CardData, setCardData] = useState([]);
+  const [onSuccess, setonSuccess] = useState(false);
   const [formInputs, setFormInputs] = useState({
     name: '',
+    color: '',
     link: '',
     icnos: ''
   });
+  const [Error, setError] = useState({
+    link: '',
+    name: '',
+    icons: '',
+    color: ''
+  });
+  const [IconsArray, setIconsArray] = useState([]);
 
   const [isLoading, setisLoading] = useState(false);
 
@@ -31,23 +59,131 @@ const Portfolio = () => {
   };
 
   function IconsName() {
-    if (!formInputs.icnos) return;
+    if (!formInputs.icnos) return [];
+    setIconsArray([...IconsArray, { icon: formInputs.icnos, color: formInputs.color }]);
+    setFormInputs({ ...formInputs, icnos: '', color: '' });
+    document.getElementById('iconsInput').value = '';
+  }
 
-    if (formInputs.icnos.includes(',')) {
-      let arr = formInputs.icnos.split(',');
-      if (arr[arr.length - 1] === '') {
-        return arr.splice(0, arr.length - 1);
-      }
-      return arr;
-    } else {
-      return [`${formInputs.icnos}`];
+  function Submit() {
+    const { icnos, link, name } = formInputs;
+    if (!name) {
+      toast.error('Please enter website name.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light'
+      });
+      return setError({ name: 'Please enter website name.' });
+    }
+
+    if (!link) {
+      toast.error('Please enter website link.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light'
+      });
+      return setError({ link: 'Please enter website link.' });
+    }
+
+    if (IconsArray.length === 0) {
+      toast.error('Please enter Icons name.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light'
+      });
+      return setError({ icons: 'Please enter Icons name' });
+    }
+    setError({});
+
+    if (!file) {
+      toast.error('Please add one image.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light'
+      });
+      return;
+    }
+    setError({});
+
+    setisLoading(true);
+    try {
+      AddDataToFirebase('portfolio', { ...formInputs, file, icnosArray: IconsArray })
+        .then((sucess) => {
+          setisLoading(false);
+          toast.success('Added To Database', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'light'
+          });
+          setonSuccess(!onSuccess);
+        })
+        .catch((err) => {
+          console.log(err);
+          toast.error('Something went wrong.', {
+            position: 'top-right',
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: 'light'
+          });
+          setisLoading(false);
+        });
+    } catch (error) {
+      toast.error('Something went wrong.', {
+        position: 'top-right',
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light'
+      });
+      setisLoading(false);
     }
   }
-  function Submit() {
-    const res = { ...formInputs, file, icnosArray: IconsName() };
-    setisLoading(true);
-    console.log(res);
+
+  function getData() {
+    GetDataFromFirebase('portfolio').then((res) => {
+      res.forEach((data) => {
+        console.log(data.data());
+        setCardData((CardData) => [...CardData, { id: data.id, data: data.data() }]);
+      });
+    });
   }
+
+  useEffect(() => {
+    getData();
+  }, [onSuccess]);
+
   return (
     <Box>
       <Box width={match ? '90%' : '500px'} mx={'auto'}>
@@ -61,7 +197,6 @@ const Portfolio = () => {
                 color={'gray'}
                 borderColor={'grey'}
                 py={4}
-                // my={1}
                 borderRadius={`${customization.borderRadius}px`}
                 display={'flex'}
                 justifyContent={'center'}
@@ -83,6 +218,8 @@ const Portfolio = () => {
           sx={{ my: 1 }}
           fullWidth
           type={'text'}
+          error={Error?.name ? true : false}
+          helperText={Error?.name}
           label={'Enter Website Name'}
           color="secondary"
           required
@@ -94,19 +231,47 @@ const Portfolio = () => {
           type={'text'}
           label={'Enter Website Link'}
           color="secondary"
+          error={Error?.link ? true : false}
+          helperText={Error?.link}
           required
         />
-        <TextField
-          onChange={(e) => setFormInputs({ ...formInputs, icnos: e.target.value })}
-          sx={{ my: 1 }}
-          fullWidth
-          multiline
-          rows={5}
-          type={'text'}
-          label={'Icons Name'}
-          color="secondary"
-          required
-        />
+        <Box display={'flex'} justifyContent={'center'} alignItems={'center'}>
+          <TextField
+            id="iconsInput"
+            error={Error?.icons ? true : false}
+            onChange={(e) => setFormInputs({ ...formInputs, icnos: e.target.value })}
+            sx={{ my: 1 }}
+            type={'text'}
+            label={'Icons Name'}
+            color="secondary"
+            // helperText={Error?.icons}
+            required
+          />
+          <TextField
+            error={Error?.icons ? true : false}
+            onChange={(e) => setFormInputs({ ...formInputs, color: e.target.value })}
+            sx={{ m: 1 }}
+            type={'text'}
+            label={'Icons Color'}
+            color="secondary"
+            // helperText={Error?.icons}
+            required
+          />
+          {/* <IconButton color="secondary">
+            <Add />
+          </IconButton> */}
+          <Button onClick={IconsName} variant="contained" color="secondary" size="large">
+            {/* <IconButton color="secondary"> */}
+            <Add />
+            {/* </IconButton> */}
+          </Button>
+        </Box>
+        <Box my={2}>
+          {IconsArray.map((value, index) => {
+            return <Chip sx={{ mx: 1 }} label={value.icon} key={index} variant="filled" color="secondary" size="small" />;
+          })}
+        </Box>
+        <Typography variant="caption">fa, Io5, ai, md,si,tb</Typography>
         <Box my={2} textAlign={'center'}>
           <Button onClick={Submit} variant="contained" color="secondary" size="large">
             {isLoading ? <CircularProgress color="inherit" /> : 'Submit'}
@@ -117,10 +282,17 @@ const Portfolio = () => {
       <Box>
         <Box mt={3} maxWidth={'1200px'} mx={'auto'}>
           <Grid container spacing={2}>
-            {Array.from({ length: 9 }).map((value) => {
+            {CardData?.map((value) => {
+              console.log(CardData);
               return (
                 <Grid item xl={3} md={4} sm={6} xs={12}>
-                  <PortfolioCards customization={customization} />
+                  <PortfolioCards
+                    image={value?.data?.file}
+                    icons={value?.data?.icnosArray}
+                    link={value?.data?.link}
+                    name={value?.data?.name}
+                    customization={customization}
+                  />
                 </Grid>
               );
             })}

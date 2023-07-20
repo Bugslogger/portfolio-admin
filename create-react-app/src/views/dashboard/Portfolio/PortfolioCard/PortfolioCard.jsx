@@ -1,25 +1,17 @@
+/* eslint-disable */
 import React, { useState } from 'react';
 import { Box, Card, CardActionArea, CardMedia, IconButton, Typography, useTheme } from '@mui/material';
 import { ReactIcons } from '../utils/functions';
 import { useSelector } from 'react-redux';
-/* eslint-disable */
-const PortfolioCard = () => {
+const PortfolioCard = ({ image, icons, link, name }) => {
   const customization = useSelector((state) => state.customization);
 
-  const [icons, seticons] = useState([
-    { icon: 'IoLogoJavascript', color: '#FFCB2B' },
-    { icon: 'SiMui', color: '#007FFF' },
-    { icon: 'SiBootstrap', color: '#fff' },
-    { icon: 'FaNodeJs', color: 'green' },
-    { icon: 'SiFirebase', color: '#FFCB2B' }
-  ]);
-  console.log(customization);
   const theme = useTheme();
   return (
     <Card variant="elevation" sx={{ borderColor: theme.palette.secondary.main, position: 'relative' }}>
       <CardActionArea>
         <Box width={'100%'} height={'100%'}>
-          <CardMedia sx={{ height: 220 }} image="/assets/web.png" title="portfolio" />
+          <CardMedia sx={{ height: 220 }} image={image} title={name} />
         </Box>
         <Box
           sx={{
@@ -45,7 +37,7 @@ const PortfolioCard = () => {
             // mb={1}
             fontFamily={customization.fontFamily}
           >
-            Yosemite National Park
+            {name}
           </Typography>
           <Box
             sx={{
