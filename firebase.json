@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site":"selfadmin",
     "public": "build",
     "ignore": [
       "firebase.json",
