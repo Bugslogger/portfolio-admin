@@ -2,10 +2,12 @@
 import { getFirestore, getDocs, collection, addDoc, doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { app } from './init';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { getApp } from 'firebase/app';
 
 const auth = getAuth();
 const db = getFirestore(app);
-
+const storage = getStorage(getApp(), 'gs://portfolio-cad0e.appspot.com');
 /**
  *  get all data from firebase with collection name
  *
@@ -109,4 +111,89 @@ export const IsUserLogged = (callback) => {
  */
 export const LogOut = (callback) => {
   signOut(auth, callback);
+};
+
+/* eslint-disable */
+// files upload
+/**
+ *
+ * @param {String} file
+ * @returns
+ */
+export const uploadFiles = async (file) => {
+  const mountainsRef = ref(storage, `files`);
+  const res = await uploadBytes(mountainsRef, file);
+  debugger;
+  console.log(res);
+  return mountainsRef;
+};
+
+export const DownloadImage = async () => {
+  getDownloadURL(ref(storage, 'files'))
+    .then(async (url) => {
+      // `url` is the download URL for 'images/stars.jpg'
+
+      const res = await XhrApiCall('GET', url);
+      console.log(res);
+
+      const img = res.blob();
+      console.log(img);
+
+      const href = URL.createObjectURL(img);
+      // Or inserted into an <img> element
+      // debugger;
+      console.log(href);
+    })
+    .catch((error) => {
+      // Handle any errors
+      console.log(error);
+    });
+};
+
+/**
+ *
+ * @param {['GET','POST']} method
+ * @param {*} url
+ * @param {*} body
+ * @param {*} header
+ * @returns
+ */
+const XhrApiCall = (method, url, body, header) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open(method, url);
+
+      xhr.responseType = 'blob';
+
+      if (body) {
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('accept', '*/*');
+        xhr.setRequestHeader('Access-Control-Allow-Credentials', true);
+        xhr.setRequestHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, HEAD, OPTIONS');
+        if (header) {
+          xhr.setRequestHeader(header.value, header.content);
+        }
+      }
+
+      xhr.onerror = () => {
+        reject(`Error is thrown from XMLHttpRequest due to ${method} Method not able to work due to some reason`);
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          resolve(xhr.response);
+        } else {
+          reject(xhr.response);
+        }
+      };
+
+      xhr.send(JSON.stringify(body));
+    } catch (error) {
+      return reject(error);
+    }
+  });
 };

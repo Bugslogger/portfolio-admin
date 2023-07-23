@@ -1,16 +1,17 @@
-import { Box, Button, Card, CardContent, CircularProgress, Grid, TextField, Typography } from '@mui/material';
+import { Box, Button, Card, CardActionArea, CardContent, CircularProgress, Grid, TextField, Typography } from '@mui/material';
 import { useFormik } from 'formik';
 import React from 'react';
 import { useState } from 'react';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-import { AddDataToFirebase } from '../../../firebase/function';
+import { AddDataToFirebase, DownloadImage, uploadFiles } from '../../../firebase/function';
 import Editor from './Editor';
 
 const About = () => {
   const [isLoading, setisLoading] = useState(false);
   const [isLoading2, setisLoading2] = useState(false);
   const [about, setabout] = useState('');
+  const [resumeupload, setresumeupload] = useState('');
 
   const workForrm = useFormik({
     initialValues: {
@@ -78,7 +79,7 @@ const About = () => {
   const Change = (event, editor) => {
     const data = editor.getData();
     setabout(data);
-    console.log({ event, editor, data });
+    // console.log({ event, editor, data });
   };
 
   function About() {
@@ -141,6 +142,7 @@ const About = () => {
       setisLoading(false);
     }
   }
+
   return (
     <Box>
       <Grid container spacing={2}>
@@ -225,17 +227,40 @@ const About = () => {
             <CardContent>
               <Typography variant="h2">Upload Resume</Typography>
               <Box>
-                <Button color="secondary" variant="outlined" sx={{ my: 1 }}>
+                <Button
+                  color="secondary"
+                  onClick={() => {
+                    document.getElementById('resumeupload').click();
+                  }}
+                  variant="outlined"
+                  sx={{ my: 1 }}
+                >
                   Upload
                 </Button>
+                <input
+                  type="file"
+                  // value={resumeupload}
+                  onChange={async (e) => {
+                    // console.log(e);
+                    if (e.target.files[0]) {
+                      const res = await uploadFiles(e.target.files[0]);
+                      console.log(res);
+                      setresumeupload(e.target.files[0]);
+                    }
+                  }}
+                  hidden
+                  id="resumeupload"
+                />
                 <Typography variant="body1" component={'span'} mx={1}>
-                  dfbgfsdbgfsdbgd
+                  {resumeupload?.name}
                 </Typography>
               </Box>
               <Box sx={{ my: 2 }}></Box>
               <Card variant="outlined">
-                <CardContent>
-                  <Typography></Typography>
+                <CardContent sx={{ '&:last-child': { pb: 2 }, py: 2 }}>
+                  <CardActionArea onClick={DownloadImage}>
+                    <Typography variant="body2">{resumeupload?.name}</Typography>
+                  </CardActionArea>
                 </CardContent>
               </Card>
             </CardContent>

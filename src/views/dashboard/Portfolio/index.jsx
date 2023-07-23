@@ -66,7 +66,7 @@ const Portfolio = () => {
   }
 
   function Submit() {
-    const { icnos, link, name } = formInputs;
+    const { link, name } = formInputs;
     if (!name) {
       toast.error('Please enter website name.', {
         position: 'top-right',
