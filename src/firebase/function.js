@@ -136,10 +136,9 @@ export const DownloadImage = async () => {
       const res = await XhrApiCall('GET', url);
       console.log(res);
 
-      const img = res.blob();
-      console.log(img);
+      console.log(res);
 
-      const href = URL.createObjectURL(img);
+      const href = URL.createObjectURL(res);
       // Or inserted into an <img> element
       // debugger;
       console.log(href);
@@ -166,6 +165,13 @@ const XhrApiCall = (method, url, body, header) => {
       xhr.open(method, url);
 
       xhr.responseType = 'blob';
+
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+      xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+      xhr.setRequestHeader('accept', '*/*');
+      xhr.setRequestHeader('Access-Control-Allow-Credentials', true);
+      xhr.setRequestHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, HEAD, OPTIONS');
 
       if (body) {
         xhr.setRequestHeader('Content-Type', 'application/json');
