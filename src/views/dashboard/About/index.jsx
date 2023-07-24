@@ -4,7 +4,7 @@ import React from 'react';
 import { useState } from 'react';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-import { AddDataToFirebase, DownloadImage, uploadFiles } from '../../../firebase/function';
+import { AddDataToFirebase, DownloadImage, SendSingleDataToFirebase, uploadFiles } from '../../../firebase/function';
 import Editor from './Editor';
 
 const About = () => {
@@ -98,7 +98,7 @@ const About = () => {
     }
     setisLoading2(true);
     try {
-      AddDataToFirebase('about', { about })
+      SendSingleDataToFirebase('about',"about-id", { about })
         .then(() => {
           setisLoading2(false);
           toast.success('Added To Database', {
@@ -115,6 +115,8 @@ const About = () => {
         })
         .catch((err) => {
           console.log(err);
+          setisLoading2(false);
+
           toast.error('Something went wrong.', {
             position: 'top-right',
             autoClose: 5000,

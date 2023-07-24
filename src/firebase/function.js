@@ -1,5 +1,5 @@
 // firebase
-import { getFirestore, getDocs, collection, addDoc, doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
+import { setDoc, getFirestore, getDocs, collection, addDoc, doc, deleteDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { app } from './init';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
@@ -53,9 +53,25 @@ export const AddDataToFirebase = (collectionName, body) => {
 /**
  *
  * @param {String} collectionName
+ * @param {String} id
+ * @returns
+ *
+ */
+export const SendSingleDataToFirebase = async (collectionName, id, body) => {
+  if (!collectionName && typeof collectionName !== 'string') throw new Error('Collection Name can not be empty and must be a string.');
+  if (!id && typeof id !== 'string') throw new Error('Id can not be empty and must be a string.');
+  if (!body && typeof body !== 'object') throw new Error('You are passing body eigther empty or invalid.');
+  const data = await setDoc(doc(db, collectionName, id), body);
+  return data;
+};
+
+/**
+ *
+ * @param {String} collectionName
  * @param {String} collectionKeyName
  * @param {object} updateBody
  * @returns
+ *
  */
 
 export const updateDataToFirebase = (collectionName, collectionKeyName, updateBody) => {
@@ -73,7 +89,7 @@ export const updateDataToFirebase = (collectionName, collectionKeyName, updateBo
  * @returns
  */
 export const DeleteDataFromFirebase = (collectionName, collectionKeyName) => {
-  console.log(collectionName, collectionKeyName);
+  // console.log(collectionName, collectionKeyName);
   // return db.collection(collectionName).doc(collectionKeyName).delete();
   if (!collectionKeyName || !collectionName) {
     throw new Error('Invalid function parameters');
@@ -123,29 +139,16 @@ export const LogOut = (callback) => {
 export const uploadFiles = async (file) => {
   const mountainsRef = ref(storage, `files`);
   const res = await uploadBytes(mountainsRef, file);
-  debugger;
-  console.log(res);
   return mountainsRef;
 };
 
 export const DownloadImage = async () => {
   getDownloadURL(ref(storage, 'files'))
     .then(async (url) => {
-      // `url` is the download URL for 'images/stars.jpg'
-
-      const res = await XhrApiCall('GET', url);
-      console.log(res);
-
-      console.log(res);
-
-      const href = URL.createObjectURL(res);
-      // Or inserted into an <img> element
-      // debugger;
-      console.log(href);
     })
     .catch((error) => {
       // Handle any errors
-      console.log(error);
+      // console.log(error);
     });
 };
 
